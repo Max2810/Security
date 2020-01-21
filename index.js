@@ -5,25 +5,39 @@ require("dotenv").config();
 require("make-promises-safe");
 
 // Require Node.js Dependencies
+const { createReadStream, readFileSync, promises: { readFile } } = require("fs");
+
+// Require Node.js Dependencies
+const os = require("os");
 const { join, dirname, basename } = require("path");
 const fs = require("fs");
 const { mkdir, writeFile, rmdir } = require("fs").promises;
+const { writeFileSync } = require("fs");
 
 // Require Third-party Dependencies
 const Lock = require("@slimio/lock");
 const Spinner = require("@slimio/async-cli-spinner");
 const git = require("isomorphic-git");
 const { from, cwd } = require("nsecure");
-const { cyan, white, grey } = require("kleur");
+const { cyan, white, grey, yellow } = require("kleur");
+// serv
+const polka = require("polka");
+const send = require("@polka/send-type");
+const sirv = require("sirv");
+const open = require("open");
 
 // Require Internal Dependencies
-const { linkPackages, stats } = require("./src/utils");
+const { linkPackages, stats, formatBytes } = require("./src/utils");
 
 // Vars
 const token = process.env.GIT_TOKEN;
 const securityLock = new Lock({ maxConcurrent: 2 });
 Spinner.DEFAULT_SPINNER = "dots";
 git.plugins.set("fs", fs);
+
+// CONSTANTS
+const VIEW_DIR = join(__dirname, "views");
+
 
 // CONSTANTS
 const ORGA_URL = "https://github.com/SlimIO";
@@ -157,6 +171,34 @@ async function fetchPackagesStats() {
 
 /**
  * @async
+ * @function startHTTPServer
+ * @param {!object} data
+ * @returns {Promise<void>}
+ */
+async function startHTTPServer(data = {}) {
+    const port = process.env.HTTP_PORT || 1337;
+    const httpLink = `http://localhost:${port}`;
+
+    const server = polka()
+        .use(sirv(join(__dirname, "public"), { dev: true }))
+        .get("/", (req, res) => {
+            res.writeHead(200, { "Content-Type": "text/html" });
+            createReadStream(join(VIEW_DIR, "index.html")).pipe(res);
+        })
+        .get("/data", (req, res) => send(res, 200, data));
+
+    server.listen(port, async() => {
+        console.log(white().bold(`\n > HTTP Server started at ${yellow().bold(httpLink)}\n`));
+        await open(httpLink);
+    });
+    process.on("SIGINT", () => {
+        server.server.close();
+        process.exit(0);
+    });
+}
+
+/**
+ * @async
  * @function main
  */
 async function main() {
@@ -170,6 +212,7 @@ async function main() {
     }).start("clone repositories...");
 
     let builtInThird;
+    let fStats;
     try {
         const repos = await Promise.all(BUILTIN_ADDONS.map(cloneRep));
         spinner.text = "Run node-secure analyze";
@@ -177,20 +220,8 @@ async function main() {
         const jsonFiles = await Promise.all(repos.map(runSecureDir));
 
         const nMap = await linkPackages(jsonFiles.filter((value) => value !== null));
-        const fStats = stats(nMap);
+        fStats = stats(nMap);
         spinner.succeed(`Successfully done in ${spinner.elapsedTime.toFixed(2)}ms`);
-
-        console.log(grey().bold("\n----------------------------------"));
-        console.log(white().bold("SlimIO built-in stats:\n"));
-        console.log(`Number of Third-party npm packages: ${cyan().bold(fStats.external)}`);
-        // eslint-disable-next-line prefer-template
-        console.log(" - " + [...fStats.third].join("\n - "));
-        builtInThird = fStats.third;
-
-        console.log(`\nNumber of packages with transitive dependencies: ${cyan().bold(fStats.transitive.size)}`);
-        // eslint-disable-next-line prefer-template
-        console.log(" - " + [...fStats.transitive].join("\n - "));
-        console.log("\n");
     }
     catch (error) {
         spinner.failed(error.message);
@@ -201,12 +232,54 @@ async function main() {
     }
 
     const pkgStats = await fetchPackagesStats();
-    const fStats = stats(pkgStats);
+    const fStatsPkg = stats(pkgStats);
 
+    console.log(fStats);
+    console.log("---------------------------------------------------------------------");
+    console.log(fStatsPkg);
+
+    const data = {
+        fStats, fStatsPkg
+    };
+
+    await startHTTPServer(data);
+}
+main().catch(console.error);
+
+/*
+        console.log(grey().bold("\n----------------------------------"));
+        console.log(white().bold("SlimIO built-in stats:\n"));
+        console.log(`Number of SlimIO npm packages: ${cyan().bold(fStats.internal)}`);
+        console.log(`Size: ${cyan().bold(formatBytes(fStats.internalSize))}`);
+        console.log(`License: ${cyan().bold(JSON.stringify(fStats.internalLicenses))}`);
+        // eslint-disable-next-line prefer-template
+        console.log(" - " + [...fStats.slimDeps].join("\n - "));
+        console.log(`Number of Third-party npm packages: ${cyan().bold(fStats.external)}`);
+        console.log(`Size: ${cyan().bold(formatBytes(fStats.externalSize))}`);
+        console.log(`License: ${cyan().bold(JSON.stringify(fStats.externalLicenses))}`);
+        // eslint-disable-next-line prefer-template
+        console.log(" - " + [...fStats.third].join("\n - "));
+        builtInThird = fStats.third;
+
+        console.log(`\nNumber of packages with transitive dependencies: ${cyan().bold(fStats.transitive.size)}`);
+        // eslint-disable-next-line prefer-template
+        console.log(" - " + [...fStats.transitive].join("\n - "));
+        console.log("\n");
+        */
+
+/*
     console.log(grey().bold("----------------------------------"));
     console.log(white().bold("SlimIO packages stats:\n"));
     console.log(`Number of SlimIO npm packages: ${cyan().bold(fStats.internal)}`);
+    console.log(`Size: ${cyan().bold(formatBytes(fStats.internalSize))}`);
+    console.log(`License: ${cyan().bold(JSON.stringify(fStats.internalLicenses))}`);
+    // eslint-disable-next-line prefer-template
+    console.log(" - " + [...fStats.slimDeps].join("\n - "));
     console.log(`Number of Third-party npm packages: ${cyan().bold(fStats.external)}`);
+    console.log(`Size: ${cyan().bold(formatBytes(fStats.externalSize))}`);
+    console.log(`License: ${cyan().bold(JSON.stringify(fStats.externalLicenses))}`);
+    // eslint-disable-next-line prefer-template
+    console.log(" - " + [...fStats.third].join("\n - "));
     console.log("List (with dedup filtered):");
     // eslint-disable-next-line prefer-template
     console.log(" - " + [...fStats.third].filter((name) => !builtInThird.has(name)).join("\n - "));
@@ -214,5 +287,4 @@ async function main() {
     console.log(`\nNumber of packages with transitive dependencies: ${cyan().bold(fStats.transitive.size)}`);
     // eslint-disable-next-line prefer-template
     console.log(" - " + [...fStats.transitive].join("\n - "));
-}
-main().catch(console.error);
+    */
