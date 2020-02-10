@@ -1,36 +1,75 @@
 <!DOCTYPE html>
-
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta http-equiv="X-UA-Compatible" content="ie=edge" />
-
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
-    <script src="js/index.js" defer></script>
-    <link rel="stylesheet" type="text/css" href="css/index.css">
-    <title>SlimIO Rapport</title>
-    <div class="tab">
-        <table id="thirdArr" class="blok">Third Dependency</table>
-    </div>
-    <div class="tab">
-        <table id="slimDepsArr" class="blok">SlimIO Dependency</table>
-    </div>
-
-    <div class="page">
-        <div class="blok">
-            <div class="chart-container" >
-                <canvas id="pie-chart-intLicense" width="800" height="450"></canvas>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <link
+            href="https://fonts.googleapis.com/css?family=Poppins:400,500&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" type="text/css" href="../css/style.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+        <script src="js/index.js" defer></script>
+        <title>SlimIO Rapport</title>
+    </head>
+    <body>
+        <header>
+            <div class="logo-container">
+                <img src="../img/logo.png" alt="logo" />
+                <h4 class="logo">SlimIO Rapport</h4>
             </div>
-            <div class="chart-container" >
-                <canvas id="pie-chart-extLicense" width="800" height="450"></canvas>
+        </header>
+
+        <main>
+            <div class="tab-wrapper">
+                <div class="tab">
+                    <table id="thirdArr" class="blok">
+                        Third Dependency
+                    </table>
+                </div>
+                <div class="tab">
+                    <table id="slimDepsArr" class="blok">
+                        SlimIO Dependency
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="blok">
-            <div class="chart-container" >
-                <canvas id="pie-chart-intLicensePkg" width="800" height="450"></canvas>
+
+            <div class="pie-wrapper">
+                <div class="pie-block">
+                    <div class="chart-container">
+                        <canvas
+                            id="pie-chart-intLicense"
+                            width="300"
+                            height="300"
+                        ></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas
+                            id="pie-chart-extLicense"
+                            width="300"
+                            height="300"
+                        ></canvas>
+                    </div>
+                </div>
+
+                <div class="pie-block">
+                    <div class="chart-container">
+                        <canvas
+                            id="pie-chart-intLicensePkg"
+                            width="300"
+                            height="300"
+                        ></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <canvas
+                            id="pie-chart-extLicensePkg"
+                            width="300"
+                            height="300"
+                        ></canvas>
+                    </div>
+                </div>
             </div>
-            <div class="chart-container" >
-                <canvas id="pie-chart-extLicensePkg" width="800" height="450"></canvas>
-            </div>
-        </div>
-    </div>
+        </main>
+    </body>
+</html>

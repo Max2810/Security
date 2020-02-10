@@ -40,6 +40,8 @@ document.addEventListener("DOMContentLoaded", async() => {
     const intLicensesPkg = mapLicense(data.fStatsPkg.intLicenses);
     const extLicensesPkg = mapLicense(data.fStatsPkg.extLicenses);
 
+    Chart.defaults.global.defaultFontColor = "grey";
+    Chart.defaults.global.defaultFontFamily = "Arial";
     new Chart(document.getElementById("pie-chart-intLicense"), {
         type: "pie",
         data: {
