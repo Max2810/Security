@@ -62,3 +62,8 @@ docs/
 jsdoc/
 temp/
 json/
+
+# etc
+.DS_Store
+.prettierignore
+.prettierrc

@@ -31,7 +31,7 @@ function mapLicense(data) {
 }
 
 document.addEventListener("DOMContentLoaded", async() => {
-    const data = await request("/data");
+    const data = await request("http://localhost:1337/data");
 
     console.log(data);
 

@@ -31,6 +31,17 @@ body {
     align-items: center;
 }
 
+th {
+    padding: 0.5rem;
+    font-size: small;
+}
+
+td {
+    border-top: 1px solid #dee2e6;
+    padding: 0.1rem;
+    font-size: small;
+}
+
 img {
     width: 60px;
     height: auto;

@@ -25,6 +25,8 @@ const polka = require("polka");
 const send = require("@polka/send-type");
 const sirv = require("sirv");
 const open = require("open");
+const cors = require("cors");
+
 
 // Require Internal Dependencies
 const { linkPackages, stats, formatBytes } = require("./src/utils");
@@ -180,7 +182,8 @@ async function startHTTPServer(data = {}) {
     const httpLink = `http://localhost:${port}`;
 
     const server = polka()
-        .use(sirv(join(__dirname, "public"), { dev: true }))
+        .use(sirv(join(__dirname), { dev: true }))
+        .use(cors())
         .get("/", (req, res) => {
             res.writeHead(200, { "Content-Type": "text/html" });
             createReadStream(join(VIEW_DIR, "index.html")).pipe(res);
